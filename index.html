@@ -125,11 +125,6 @@
       pointer-events: none;
     }
 
-    .hero h2,
-    .socials {
-      will-change: opacity;
-    }
-
     .container {
       position: relative;
       z-index: 1;
@@ -1423,7 +1418,7 @@
       if (!canvas || !title || !socials) return;
       const ctx = canvas.getContext('2d');
 
-      const MAX = 1200, MAX_SMALL = 700;
+      const MAX = 1200, MAX_SMALL = 700, MAX_DUST = 12000;
       const PALETTE = ['#ffffff', '#fff1d6', '#d6e4ff'];
       const clamp01 = v => Math.min(1, Math.max(0, v));
 
@@ -1449,8 +1444,8 @@
         };
       });
 
-      let vw = 0, vh = 0, dpr = 1, sizeKey = '', heroKey = '';
-      let parts = [], q = 0, running = false, last = 0;
+      let vw = 0, vh = 0, dpr = 1, sizeKey = '', heroSig = null;
+      let parts = [], q = 0, running = false, last = 0, homeSz = 0.5;
 
       function build() {
         vw = root.clientWidth; vh = window.innerHeight;
@@ -1470,9 +1465,16 @@
         const w = Math.ceil(Math.max(a.right, b.right) - left + pad);
         const h = Math.ceil(Math.max(a.bottom, b.bottom) - top + pad);
         if (w < 4 || h < 4) return;
-        const hk = [sk, Math.round(left), Math.round(top + sy), w, h].join('|');
-        if (hk === heroKey) return;
-        heroKey = hk;
+        // The words and icons slide in with a CSS transform animation. Measuring them mid-slide bakes
+        // that offset into the canvas copy, and heroKey can't notice (it only sees the h2/ul boxes,
+        // which don't animate), so later rebuilds would be skipped. Wait until the intro has finished.
+        if (title.getAnimations({ subtree: true }).length || socials.getAnimations({ subtree: true }).length) return;
+        // Skip only if the hero hasn't moved or changed size (sub-pixel tolerance, so smooth-scroll
+        // fractions can't trigger endless rebuilds). Anything bigger means the canvas copy is stale.
+        const sig = { sk, x: left, y: top + sy, w, h };
+        if (heroSig && heroSig.sk === sk && Math.abs(heroSig.x - sig.x) < 0.75 &&
+            Math.abs(heroSig.y - sig.y) < 0.75 && heroSig.w === w && heroSig.h === h) return;
+        heroSig = sig;
 
         const S = 2;
         const oc = document.createElement('canvas');
@@ -1480,13 +1482,20 @@
         const o = oc.getContext('2d', { willReadFrequently: true });
         o.scale(S, S);
         o.fillStyle = '#fff';
-        o.textBaseline = 'middle';
+        o.textBaseline = 'alphabetic';
 
         title.querySelectorAll('.fx-w').forEach(sp => {
           const r = sp.getBoundingClientRect(), cs = getComputedStyle(sp);
           o.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
           try { o.letterSpacing = cs.letterSpacing; } catch (e) { }
-          o.fillText(sp.textContent.trim(), r.left - left, r.top - top + r.height / 2);
+          // Place the baseline exactly where the browser does: the font's content area (ascent + descent)
+          // is centred inside the line box. 'middle' baseline is off by ~1px, which showed up as a jump.
+          const m = o.measureText('Hg');
+          const fa = m.fontBoundingBoxAscent, fd = m.fontBoundingBoxDescent;
+          const base = (fa !== undefined && fd !== undefined)
+            ? (r.height - (fa + fd)) / 2 + fa
+            : r.height / 2 + parseFloat(cs.fontSize) * 0.35;
+          o.fillText(sp.textContent.trim(), r.left - left, r.top - top + base);
         });
 
         socials.querySelectorAll('svg').forEach(svg => {
@@ -1505,12 +1514,18 @@
         const pts = [];
         for (let y = 0; y < oc.height; y++) {
           for (let x = 0; x < oc.width; x++) {
-            if (data[(y * oc.width + x) * 4 + 3] > 120) pts.push(x / S + left, y / S + top + sy);
+            if (data[(y * oc.width + x) * 4 + 3] > 120) {
+              const cy = y / S + top;
+              // brightness of the real text on screen: title #c4c4c4, icons #9a9a9a
+              pts.push(x / S + left, cy + sy, cy >= b.top ? 0.6 : 0.77);
+            }
           }
         }
 
-        const total = pts.length / 2;
-        const n = Math.min(total, vw < 700 ? MAX_SMALL : MAX);
+        const total = pts.length / 3;
+        const P = Math.min(total, MAX_DUST);
+        const n = Math.min(P, vw < 700 ? MAX_SMALL : MAX);
+        homeSz = Math.max(0.5, Math.sqrt(0.25 * total / P));
         const idx = Array.from({ length: total }, (_, i) => i);
         const sr = mulberry32(99);
         for (let i = total - 1; i > 0; i--) {
@@ -1518,52 +1533,132 @@
           const t = idx[i]; idx[i] = idx[j]; idx[j] = t;
         }
         parts = [];
-        for (let i = 0; i < n; i++) {
+        for (let i = 0; i < P; i++) {
           const k = idx[i];
-          parts.push(Object.assign({
-            hx: pts[k * 2] + (sr() - 0.5) * 0.5,
-            hy: pts[k * 2 + 1] + (sr() - 0.5) * 0.5
-          }, seeds[i]));
+          const home = { hx: pts[k * 3], hy: pts[k * 3 + 1], ha: pts[k * 3 + 2] };
+          if (i < n) {
+            // these become the real background stars
+            parts.push(Object.assign(home, seeds[i], { star: true }));
+          } else {
+            // the rest of the text's "matter": peels off and fades out as it drifts
+            parts.push(Object.assign(home, {
+              star: false, r: sr(), ang: sr() * 6.283, dist: 10 + sr() * 34
+            }));
+          }
         }
       }
 
-      let domD = -1;
-      function applyDom(d) {
-        if (d === domD) return;
-        domD = d;
-        const v = d ? 'hidden' : '';
+      // Hard swap, no crossfade: the real text is hidden in exactly the frames in which the canvas copy
+      // is drawn (q > SHOW), so the two are never on screen together and can never read as a second copy.
+      // Don't swap on the first pixel of scroll: keep the real text until the dispersal is about to begin
+      // (particles start moving at q = S0 = 0.08), so tiny scrolls near the top never swap at all.
+      const SHOW = 0.075;
+      let domHidden = null;
+      function applyDom(qq) {
+        const hide = qq > SHOW;
+        if (hide === domHidden) return;
+        domHidden = hide;
+        const v = hide ? 'hidden' : '';
         title.style.visibility = v;
         socials.style.visibility = v;
-        socials.style.pointerEvents = d ? 'none' : '';
+        socials.style.pointerEvents = hide ? 'none' : '';
       }
 
-      function draw(t, sy) {
+      // ---- Content-aware fade --------------------------------------------------------------------
+      // Stars near any piece of real content (text, tags, buttons, links, nav, name) dim out so they
+      // never sit behind it. Each star eases toward its target, so stars drift back in smoothly
+      // when the content scrolls away. Tweak these three numbers to taste.
+      const FADE_PAD = 10;      // px around content where stars are fully hidden
+      const FADE_FEATHER = 42;  // px over which stars fade back in (the soft edge)
+      const FADE_FLOOR = 0.0;   // 0 = fully hidden behind content, 0.2 = faint ghost stars remain
+      const FADE_SPEED = 5;     // higher = quicker fade in/out
+
+      const zoneEls = [...document.querySelectorAll([
+        'section p', '.t-date', '.t-item h3', '.t-more', '.t-details', '.tags li',
+        '.resume-link', '.contact-mail', '.contact-list li', 'footer.foot p',
+        '.nav-list a', '#brand'
+      ].join(','))].map(el => ({ el, rv: el.closest('.reveal') }));
+      const zones = new Float32Array(zoneEls.length * 4);
+      let zoneN = 0;
+
+      function collectZones() {
+        const R = FADE_PAD + FADE_FEATHER;
+        zoneN = 0;
+        for (let i = 0; i < zoneEls.length; i++) {
+          const z = zoneEls[i];
+          // content that hasn't faded in yet shouldn't clear stars
+          if (z.rv && !z.rv.classList.contains('in')) continue;
+          const r = z.el.getBoundingClientRect();
+          if (r.width < 2 || r.height < 2) continue;      // hidden / collapsed
+          if (r.bottom < -R || r.top > vh + R || r.right < -R || r.left > vw + R) continue;
+          const k = zoneN * 4;
+          zones[k] = r.left; zones[k + 1] = r.top; zones[k + 2] = r.right; zones[k + 3] = r.bottom;
+          zoneN++;
+        }
+      }
+
+      function fadeAt(x, y) {
+        let best = Infinity;
+        for (let i = 0, k = 0; i < zoneN; i++, k += 4) {
+          const dx = Math.max(zones[k] - x, 0, x - zones[k + 2]);
+          const dy = Math.max(zones[k + 1] - y, 0, y - zones[k + 3]);
+          const d2 = dx * dx + dy * dy;
+          if (d2 < best) best = d2;
+        }
+        const t = clamp01((Math.sqrt(best) - FADE_PAD) / FADE_FEATHER);
+        return FADE_FLOOR + (1 - FADE_FLOOR) * t * t * (3 - 2 * t);
+      }
+
+      function draw(t, sy, dt) {
         const S0 = 0.08, STAG = 0.3, DUR = 0.62;
         const vis = 1;
+        const hs = homeSz;
+        const rest1 = new Path2D(), rest2 = new Path2D();
         for (let i = 0; i < parts.length; i++) {
           const p = parts[i];
           let e = clamp01((q - S0 - p.r * STAG) / DUR);
           e = e * e * (3 - 2 * e);
-
           const hy = p.hy - sy;
-          const tx = p.sx * vw, ty = p.sy * vh;
-          const sw = Math.sin(e * Math.PI) * p.amp;
-          let x = p.hx + (tx - p.hx) * e + Math.cos(p.ang) * sw;
-          let y = hy + (ty - hy) * e + Math.sin(p.ang) * sw;
-          if (!reduceMotion) {
-            x += Math.sin(t * p.drift + p.ph) * 2 * e;
-            y += Math.cos(t * p.drift * 0.8 + p.ph) * 2 * e;
+
+          if (e === 0) {
+            // still part of the text: drawn in one batch, same brightness as the real text
+            if (hy < -2 || hy > vh + 2) continue;
+            (p.ha > 0.7 ? rest1 : rest2).rect(p.hx - hs / 2, hy - hs / 2, hs, hs);
+            continue;
+          }
+
+          let x, y, a, sz;
+          if (p.star) {
+            const tx = p.sx * vw, ty = p.sy * vh;
+            const sw = Math.sin(e * Math.PI) * p.amp;
+            x = p.hx + (tx - p.hx) * e + Math.cos(p.ang) * sw;
+            y = hy + (ty - hy) * e + Math.sin(p.ang) * sw;
+            if (!reduceMotion) {
+              x += Math.sin(t * p.drift + p.ph) * 2 * e;
+              y += Math.cos(t * p.drift * 0.8 + p.ph) * 2 * e;
+            }
+            const tw = reduceMotion ? 0.6 : 0.5 + 0.5 * Math.sin(t * p.spd + p.ph);
+            const aStar = (p.base + (1 - p.base) * tw * tw) * 0.9;
+            a = (p.ha + (aStar - p.ha) * e) * vis;
+            sz = hs + (p.size - hs) * e;
+            // fade around real content (scaled by e so the text-to-star dispersal is untouched)
+            const ft = fadeAt(x, y);
+            if (p.fv === undefined || reduceMotion) p.fv = ft;
+            else p.fv += (ft - p.fv) * (1 - Math.exp(-dt * FADE_SPEED));
+            a *= 1 - (1 - p.fv) * e;
+            ctx.fillStyle = e < 0.2 ? '#fff' : p.col;
+          } else {
+            x = p.hx + Math.cos(p.ang) * p.dist * e;
+            y = hy + Math.sin(p.ang) * p.dist * e - 8 * e;
+            const k = clamp01(e / 0.7);
+            a = p.ha * (1 - k * k) * vis;
+            sz = hs;
+            ctx.fillStyle = '#fff';
           }
           if (x < -10 || x > vw + 10 || y < -10 || y > vh + 10) continue;
-
-          const tw = reduceMotion ? 0.6 : 0.5 + 0.5 * Math.sin(t * p.spd + p.ph);
-          const aStar = (p.base + (1 - p.base) * tw * tw) * 0.9;
-          const a = (0.9 + (aStar - 0.9) * e) * vis;
           if (a < 0.02) continue;
 
-          const sz = 1.1 + (p.size - 1.1) * e;
           ctx.globalAlpha = a;
-          ctx.fillStyle = p.col;
           if (sz < 1.3) {
             ctx.fillRect(x - sz / 2, y - sz / 2, sz, sz);
           } else {
@@ -1572,6 +1667,9 @@
             ctx.fill();
           }
         }
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 0.77 * vis; ctx.fill(rest1);
+        ctx.globalAlpha = 0.6 * vis; ctx.fill(rest2);
         ctx.globalAlpha = 1;
       }
 
@@ -1584,12 +1682,17 @@
         q = reduceMotion ? target : q + (target - q) * (1 - Math.exp(-dt * 7));
         if (Math.abs(target - q) < 0.0005) q = target;
 
-        applyDom(q > 0.001 ? 1 : 0);
+        // While the real text is still showing, make sure the canvas copy matches where it really is
+        // (fonts, layout or the intro animation may have settled after the last build). Cheap no-op if so.
+        if (q <= SHOW) build();
+
+        const drawCopy = parts.length > 0 && q > SHOW; // never hide the real text without its copy
+        applyDom(drawCopy ? q : 0);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, vw, vh);
-        if (q > 0.001) draw(now / 1000, sy);
+        if (drawCopy) { collectZones(); draw(now / 1000, sy, dt); }
 
-        running = (q > 0.001 && !reduceMotion) || q !== target;
+        running = (q > SHOW && !reduceMotion) || q !== target;
         if (running) requestAnimationFrame(frame);
       }
 
@@ -1608,6 +1711,11 @@
       window.addEventListener('load', rebuild);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(rebuild);
       setTimeout(rebuild, 2300);
+      // build the canvas copy as soon as the intro animation is done
+      Promise.all(
+        [...title.getAnimations({ subtree: true }), ...socials.getAnimations({ subtree: true })]
+          .map(an => an.finished.catch(() => { }))
+      ).then(rebuild);
       rebuild();
     })();
   </script>
