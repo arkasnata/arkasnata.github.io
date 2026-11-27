@@ -31,7 +31,7 @@
       --gray-light: #c4c4c4;
       --white: #f5f5f5;
       --red: #ff1a14;
-      --bg: var(--black);
+      --bg: #000000;
       --text: #bdbdbd;
       --muted: #9a9a9a;
       color-scheme: dark;
@@ -111,9 +111,7 @@
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
-      background:
-        radial-gradient(ellipse at 70% 20%, #1c1c1c 0%, rgba(28, 28, 28, 0) 55%),
-        linear-gradient(180deg, #131313 0%, #0a0a0a 45%, #000 100%);
+      background: #000000;
     }
 
     .stars {
@@ -1418,7 +1416,8 @@
       if (!canvas || !title || !socials) return;
       const ctx = canvas.getContext('2d');
 
-      const MAX = 1200, MAX_SMALL = 700, MAX_DUST = 12000;
+      const MAX = 3200, MAX_DUST = 12000;
+      const STAR_AREA = 650; // ~1 star per this many px² of viewport (lower = denser)
       const PALETTE = ['#ffffff', '#fff1d6', '#d6e4ff'];
       const clamp01 = v => Math.min(1, Math.max(0, v));
 
@@ -1473,7 +1472,7 @@
         // fractions can't trigger endless rebuilds). Anything bigger means the canvas copy is stale.
         const sig = { sk, x: left, y: top + sy, w, h };
         if (heroSig && heroSig.sk === sk && Math.abs(heroSig.x - sig.x) < 0.75 &&
-            Math.abs(heroSig.y - sig.y) < 0.75 && heroSig.w === w && heroSig.h === h) return;
+          Math.abs(heroSig.y - sig.y) < 0.75 && heroSig.w === w && heroSig.h === h) return;
         heroSig = sig;
 
         const S = 2;
@@ -1524,7 +1523,13 @@
 
         const total = pts.length / 3;
         const P = Math.min(total, MAX_DUST);
-        const n = Math.min(P, vw < 700 ? MAX_SMALL : MAX);
+        // Star count scales with the screen, laid out on a jittered grid so every region
+        // gets stars (no random clumps or bald patches).
+        const target = Math.min(MAX, Math.max(450, vw * vh / STAR_AREA));
+        const cols = Math.max(1, Math.round(Math.sqrt(target * vw / vh)));
+        const rows = Math.max(1, Math.round(target / cols));
+        const cells = cols * rows;
+        const n = Math.min(P, cells);
         homeSz = Math.max(0.5, Math.sqrt(0.25 * total / P));
         const idx = Array.from({ length: total }, (_, i) => i);
         const sr = mulberry32(99);
@@ -1545,6 +1550,19 @@
               star: false, r: sr(), ang: sr() * 6.283, dist: 10 + sr() * 34
             }));
           }
+        }
+        // spread the stars evenly: one per grid cell, jittered inside it
+        const order = Array.from({ length: cells }, (_, i) => i);
+        for (let i = cells - 1; i > 0; i--) {
+          const j = Math.floor(sr() * (i + 1));
+          const t = order[i]; order[i] = order[j]; order[j] = t;
+        }
+        let c = 0;
+        for (const p of parts) {
+          if (!p.star) continue;
+          const cell = order[c++];
+          p.sx = ((cell % cols) + 0.12 + sr() * 0.76) / cols;
+          p.sy = (Math.floor(cell / cols) + 0.12 + sr() * 0.76) / rows;
         }
       }
 
@@ -1568,18 +1586,31 @@
       // Stars near any piece of real content (text, tags, buttons, links, nav, name) dim out so they
       // never sit behind it. Each star eases toward its target, so stars drift back in smoothly
       // when the content scrolls away. Tweak these three numbers to taste.
-      const FADE_PAD = 10;      // px around content where stars are fully hidden
-      const FADE_FEATHER = 42;  // px over which stars fade back in (the soft edge)
+      const FADE_PAD = 1;       // px around content where stars are fully hidden
+      const FADE_FEATHER = 5;  // px over which stars fade back in (the soft edge)
       const FADE_FLOOR = 0.0;   // 0 = fully hidden behind content, 0.2 = faint ghost stars remain
       const FADE_SPEED = 5;     // higher = quicker fade in/out
 
-      const zoneEls = [...document.querySelectorAll([
-        'section p', '.t-date', '.t-item h3', '.t-more', '.t-details', '.tags li',
-        '.resume-link', '.contact-mail', '.contact-list li', 'footer.foot p',
-        '.nav-list a', '#brand'
-      ].join(','))].map(el => ({ el, rv: el.closest('.reveal') }));
-      const zones = new Float32Array(zoneEls.length * 4);
+      // Text is measured line by line (so stars fill the ragged edges and gaps beside it);
+      // buttons, tags, rows etc. use their whole box.
+      const TEXT_SEL = ['section p', '.t-date', '.t-item h3', 'footer.foot p'];
+      const BOX_SEL = ['.t-more', '.t-details', '.tags li', '.resume-link', '.contact-mail',
+        '.contact-list li', '.nav-list a', '#brand'];
+      const mk = (sel, text) => [...document.querySelectorAll(sel.join(','))]
+        .map(el => ({ el, text, rv: el.closest('.reveal') }));
+      const zoneEls = mk(TEXT_SEL, true).concat(mk(BOX_SEL, false));
+      const range = document.createRange();
+      const ZCAP = 1500;
+      const zones = new Float32Array(ZCAP * 4);
       let zoneN = 0;
+
+      function addZone(r, R) {
+        if (zoneN >= ZCAP || r.width < 2 || r.height < 2) return;
+        if (r.bottom < -R || r.top > vh + R || r.right < -R || r.left > vw + R) return;
+        const k = zoneN * 4;
+        zones[k] = r.left; zones[k + 1] = r.top; zones[k + 2] = r.right; zones[k + 3] = r.bottom;
+        zoneN++;
+      }
 
       function collectZones() {
         const R = FADE_PAD + FADE_FEATHER;
@@ -1588,12 +1619,15 @@
           const z = zoneEls[i];
           // content that hasn't faded in yet shouldn't clear stars
           if (z.rv && !z.rv.classList.contains('in')) continue;
-          const r = z.el.getBoundingClientRect();
-          if (r.width < 2 || r.height < 2) continue;      // hidden / collapsed
-          if (r.bottom < -R || r.top > vh + R || r.right < -R || r.left > vw + R) continue;
-          const k = zoneN * 4;
-          zones[k] = r.left; zones[k + 1] = r.top; zones[k + 2] = r.right; zones[k + 3] = r.bottom;
-          zoneN++;
+          if (z.text) {
+            const box = z.el.getBoundingClientRect();
+            if (box.bottom < -R || box.top > vh + R) continue;
+            range.selectNodeContents(z.el);
+            const rs = range.getClientRects();
+            for (let j = 0; j < rs.length; j++) addZone(rs[j], R);
+          } else {
+            addZone(z.el.getBoundingClientRect(), R);
+          }
         }
       }
 
