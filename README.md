@@ -1,2 +1,1 @@
-# arkasnata.github.io
-Portfolio Website
+[![pages-build-deployment](https://github.com/arkasnata/arkasnata.github.io/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/arkasnata/arkasnata.github.io/actions/workflows/pages/pages-build-deployment)
