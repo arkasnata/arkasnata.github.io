@@ -23,7 +23,8 @@ license above.
 | Component | Use | License |
 | --- | --- | --- |
 | [Inter](https://github.com/rsms/inter) | Typeface, self-hosted in `fonts/` | [SIL Open Font License 1.1](fonts/Inter-OFL-LICENSE.txt) |
-| [Lenis](https://github.com/darkroomengineering/lenis) | Smooth scrolling, loaded from the jsDelivr CDN | MIT |
+| [Lenis](https://github.com/darkroomengineering/lenis) v1.1.20 | Smooth scrolling, self-hosted in `lib/` | [MIT](lib/Lenis-MIT-LICENSE.txt) |
 
-The Inter copyright notice and license text are included in the `fonts/`
-folder, as the OFL requires.
+The Inter and Lenis copyright notices and license texts are included in the
+`fonts/` and `lib/` folders respectively, as their licenses require. See
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

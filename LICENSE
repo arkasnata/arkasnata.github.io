@@ -8,6 +8,7 @@ use this work, in whole or in part, without prior written permission from the
 copyright holder.
 
 Viewing the website and forking this repository on GitHub solely as permitted
-by GitHub's Terms of Service is allowed. Third-party assets (such as fonts)
-remain the property of their respective owners and are subject to their own
-licenses.
+by GitHub's Terms of Service is allowed. Third-party assets (such as fonts and
+JavaScript libraries) remain the property of their respective owners and are
+subject to their own licenses, which are listed in THIRD-PARTY-NOTICES.md and
+are not affected by the copyright notice above.
