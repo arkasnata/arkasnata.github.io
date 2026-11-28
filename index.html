@@ -137,123 +137,81 @@
       }
     }
 
-    .rail {
-      --rail-w: 1px;
-      --tick-w: 7px;
+    body {
+      padding-bottom: 96px;
+    }
+
+    .dock {
       position: fixed;
       z-index: 50;
-      right: max(24px, env(safe-area-inset-right, 0px));
-      top: 31vh;
-      bottom: 29vh;
-      width: 28px;
-      pointer-events: none;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      max-width: calc(100vw - 16px);
     }
 
-    .rail-track {
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: var(--rail-w);
-      background: rgba(143, 143, 143, .55);
-    }
-
-    .rail-fill {
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: var(--rail-w);
-      background: var(--red);
-      transform: scaleY(0);
-      transform-origin: top;
-    }
-
-    .hero>.rail {
-      position: fixed;
-      z-index: 50;
-    }
-
-    .rail a {
-      position: absolute;
-      right: calc(var(--rail-w) / 2 - var(--tick-w) / 2);
-      top: var(--y, 0%);
-      transform: translateY(-50%);
+    .dock-pill {
+      position: relative;
       display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 10px 0;
-      pointer-events: auto;
-      font-size: .7rem;
-      letter-spacing: .04em;
-      color: var(--gray);
+      gap: 2px;
+      padding: 5px;
+      border-radius: 0;
+      background: rgba(12, 12, 12, .72);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, .08);
+      overflow: hidden;
     }
 
-    .rail a::after {
-      content: "";
-      width: var(--tick-w);
-      height: var(--rail-w);
-      background: var(--gray);
-      transform-origin: center;
-      transition: transform .25s ease, background .25s ease;
-    }
-
-    .rail .lbl {
-      white-space: nowrap;
-      opacity: 0;
-      transform: translateX(6px);
-      transition: opacity .25s ease, transform .25s ease, color .15s;
-    }
-
-    .rail .lbl b {
-      margin-right: 6px;
+    .dock a {
+      position: relative;
+      z-index: 1;
+      display: block;
+      padding: 9px 14px;
+      border-radius: 0;
+      font-size: .8rem;
       font-weight: 500;
+      letter-spacing: .02em;
+      white-space: nowrap;
+      color: var(--gray);
+      transition: color .25s ease;
     }
 
-    .rail a:hover .lbl,
-    .rail a.active .lbl {
-      opacity: 1;
-      transform: none;
+    .dock a:hover,
+    .dock a.active {
       color: var(--white);
     }
 
-    .rail a.active::after {
-      transform: scaleX(2);
+    .dock-ind {
+      position: absolute;
+      top: 5px;
+      bottom: 5px;
+      left: 0;
+      width: 0;
+      border-radius: 0;
+      background: rgba(255, 255, 255, .09);
+      opacity: 0;
+      transition: transform .35s cubic-bezier(.3, .9, .3, 1), width .35s cubic-bezier(.3, .9, .3, 1), opacity .2s;
+      pointer-events: none;
+    }
+
+    .dock-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
       background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left;
+      pointer-events: none;
     }
 
-    @media (hover: none),
-    (max-width: 639px) {
-      .rail {
-        right: 8px;
-        width: 18px;
+    @media (max-width: 480px) {
+      .dock a {
+        padding: 8px 10px;
+        font-size: .72rem;
       }
-
-      .rail .lbl {
-        display: none;
-      }
-    }
-
-    .nav-list {
-      display: none;
-    }
-
-    .nav-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      width: max-content;
-      max-width: 100%;
-    }
-
-    .nav-list a .n {
-      color: var(--red);
-      opacity: .85;
-    }
-
-    .nav-list a:hover .n,
-    .nav-list a.active .n {
-      opacity: 1;
     }
 
     main {
@@ -839,66 +797,6 @@
       .topfade {
         display: none;
       }
-
-      .side {
-        display: contents;
-      }
-
-      .nav-stack {
-        position: fixed;
-        z-index: 50;
-        top: 32px;
-        right: max(32px, env(safe-area-inset-right, 0px));
-        align-items: flex-end;
-      }
-
-      .nav-list {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        width: max-content;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-        position: relative;
-        z-index: 1;
-      }
-
-      .nav-list li {
-        text-align: right;
-      }
-
-      .nav-list a {
-        display: inline-block;
-        padding: 6px 0;
-        font-size: .95rem;
-        font-weight: 500;
-        letter-spacing: .01em;
-        text-align: right;
-        color: var(--gray);
-        transition: color .25s ease;
-      }
-
-      .nav-list a .n {
-        margin-right: 12px;
-        font-size: .65rem;
-        font-weight: 500;
-        letter-spacing: .06em;
-        vertical-align: middle;
-        transition: opacity .25s ease;
-      }
-
-      .nav-list a:hover,
-      .nav-list a.active {
-        color: var(--white);
-      }
-
-      .side .rail {
-        top: 50%;
-        bottom: auto;
-        height: clamp(150px, 40vh, 360px);
-        transform: translateY(-50%);
-      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -906,8 +804,8 @@
         scroll-behavior: auto;
       }
 
-      .rail .lbl,
-      .rail a::after,
+      .dock a,
+      .dock-ind,
       .t-details,
       .t-more .ico::before,
       .t-more .ico::after {
@@ -936,28 +834,17 @@
 
   <canvas class="stars" id="stars" aria-hidden="true"></canvas>
 
-  <aside class="side">
-    <div class="nav-stack">
-      <ul class="nav-list reveal" id="navList" aria-label="Sections">
-        <li><a href="#about"><span class="n">01</span>About</a></li>
-        <li><a href="#education"><span class="n">02</span>Education</a></li>
-        <li><a href="#projects"><span class="n">03</span>Projects</a></li>
-        <li><a href="#hobbies"><span class="n">04</span>Hobbies</a></li>
-        <li><a href="#contact"><span class="n">05</span>Contact</a></li>
-      </ul>
+  <nav class="dock" id="dock" aria-label="Sections">
+    <div class="dock-pill">
+      <span class="dock-ind" id="dockInd" aria-hidden="true"></span>
+      <a href="#about">About</a>
+      <a href="#education">Education</a>
+      <a href="#projects">Projects</a>
+      <a href="#hobbies">Hobbies</a>
+      <a href="#contact">Contact</a>
+      <span class="dock-fill" id="dockFill" aria-hidden="true"></span>
     </div>
-
-    <nav class="rail" id="rail" aria-label="Page sections">
-      <div class="rail-track">
-        <div class="rail-fill" id="railFill"></div>
-      </div>
-      <a href="#about"><span class="lbl"><b>01</b> About</span></a>
-      <a href="#education"><span class="lbl"><b>02</b> Education</span></a>
-      <a href="#projects"><span class="lbl"><b>03</b> Projects</span></a>
-      <a href="#hobbies"><span class="lbl"><b>04</b> Hobbies</span></a>
-      <a href="#contact"><span class="lbl"><b>05</b> Contact</span></a>
-    </nav>
-  </aside>
+  </nav>
 
   <h1 class="brand" id="brand"><a href="#top"><span class="name"><span class="fx-w fx-i" style="--i:0">Arkasnata</span>
         <span class="fx-w fx-i" style="--i:1">Dey</span></span></a></h1>
@@ -1240,38 +1127,43 @@
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const root = document.documentElement;
 
-    const railFill = document.getElementById('railFill');
-    const links = [...document.querySelectorAll('.rail a')];
-    const navListLinks = [...document.querySelectorAll('#navList a')];
+    const dock = document.getElementById('dock');
+    const dockFill = document.getElementById('dockFill');
+    const dockInd = document.getElementById('dockInd');
+    const links = [...dock.querySelectorAll('a')];
     const sections = links.map(a => document.querySelector(a.getAttribute('href')));
 
-    let railStart = 0, railEnd = 1, docHeight = 0;
+    let docHeight = 0;
     let contentTops = [], active = -1, ticking = false, resizeTimer = 0;
+
+    function moveInd() {
+      if (active < 0) return;
+      const a = links[active];
+      dockInd.style.width = a.offsetWidth + 'px';
+      dockInd.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+      dockInd.style.opacity = 1;
+    }
 
     function layoutRail() {
       docHeight = root.scrollHeight;
       contentTops = sections.map(s => (s.firstElementChild || s).offsetTop);
-      const max = docHeight - window.innerHeight;
-      const tops = sections.map(s => Math.min(max, Math.max(0, s.offsetTop - 56)));
-      railStart = tops[0];
-      railEnd = Math.max(tops[tops.length - 1], railStart + 1);
-      tops.forEach((t, i) => {
-        const y = (t - railStart) / (railEnd - railStart);
-        links[i].style.setProperty('--y', (y * 100).toFixed(2) + '%');
-      });
+      moveInd();
     }
 
     function setActive(i) {
       if (i === active) return;
       active = i;
-      links.forEach((a, n) => a.classList.toggle('active', n === i));
-      navListLinks.forEach((a, n) => a.classList.toggle('active', n === i));
+      links.forEach((a, n) => {
+        a.classList.toggle('active', n === i);
+        if (n === i) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+      });
+      moveInd();
     }
 
     function update() {
       ticking = false;
-      const p = Math.min(1, Math.max(0, (window.scrollY - railStart) / (railEnd - railStart)));
-      railFill.style.transform = 'scaleY(' + p + ')';
+      const p = Math.min(1, Math.max(0, window.scrollY / Math.max(1, docHeight - window.innerHeight)));
+      dockFill.style.transform = 'scaleX(' + p + ')';
       updateBrand();
       const atBottom = window.innerHeight + window.scrollY >= docHeight - 4;
       const line = window.scrollY + window.innerHeight * 0.4;
@@ -1417,7 +1309,7 @@
       const ctx = canvas.getContext('2d');
 
       const MAX = 3200, MAX_DUST = 12000;
-      const STAR_AREA = 650; // ~1 star per this many px² of viewport (lower = denser)
+      const STAR_AREA = 650;
       const PALETTE = ['#ffffff', '#fff1d6', '#d6e4ff'];
       const clamp01 = v => Math.min(1, Math.max(0, v));
 
@@ -1464,12 +1356,7 @@
         const w = Math.ceil(Math.max(a.right, b.right) - left + pad);
         const h = Math.ceil(Math.max(a.bottom, b.bottom) - top + pad);
         if (w < 4 || h < 4) return;
-        // The words and icons slide in with a CSS transform animation. Measuring them mid-slide bakes
-        // that offset into the canvas copy, and heroKey can't notice (it only sees the h2/ul boxes,
-        // which don't animate), so later rebuilds would be skipped. Wait until the intro has finished.
         if (title.getAnimations({ subtree: true }).length || socials.getAnimations({ subtree: true }).length) return;
-        // Skip only if the hero hasn't moved or changed size (sub-pixel tolerance, so smooth-scroll
-        // fractions can't trigger endless rebuilds). Anything bigger means the canvas copy is stale.
         const sig = { sk, x: left, y: top + sy, w, h };
         if (heroSig && heroSig.sk === sk && Math.abs(heroSig.x - sig.x) < 0.75 &&
           Math.abs(heroSig.y - sig.y) < 0.75 && heroSig.w === w && heroSig.h === h) return;
@@ -1487,8 +1374,6 @@
           const r = sp.getBoundingClientRect(), cs = getComputedStyle(sp);
           o.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
           try { o.letterSpacing = cs.letterSpacing; } catch (e) { }
-          // Place the baseline exactly where the browser does: the font's content area (ascent + descent)
-          // is centred inside the line box. 'middle' baseline is off by ~1px, which showed up as a jump.
           const m = o.measureText('Hg');
           const fa = m.fontBoundingBoxAscent, fd = m.fontBoundingBoxDescent;
           const base = (fa !== undefined && fd !== undefined)
@@ -1515,7 +1400,6 @@
           for (let x = 0; x < oc.width; x++) {
             if (data[(y * oc.width + x) * 4 + 3] > 120) {
               const cy = y / S + top;
-              // brightness of the real text on screen: title #c4c4c4, icons #9a9a9a
               pts.push(x / S + left, cy + sy, cy >= b.top ? 0.6 : 0.77);
             }
           }
@@ -1523,8 +1407,6 @@
 
         const total = pts.length / 3;
         const P = Math.min(total, MAX_DUST);
-        // Star count scales with the screen, laid out on a jittered grid so every region
-        // gets stars (no random clumps or bald patches).
         const target = Math.min(MAX, Math.max(450, vw * vh / STAR_AREA));
         const cols = Math.max(1, Math.round(Math.sqrt(target * vw / vh)));
         const rows = Math.max(1, Math.round(target / cols));
@@ -1542,16 +1424,13 @@
           const k = idx[i];
           const home = { hx: pts[k * 3], hy: pts[k * 3 + 1], ha: pts[k * 3 + 2] };
           if (i < n) {
-            // these become the real background stars
             parts.push(Object.assign(home, seeds[i], { star: true }));
           } else {
-            // the rest of the text's "matter": peels off and fades out as it drifts
             parts.push(Object.assign(home, {
               star: false, r: sr(), ang: sr() * 6.283, dist: 10 + sr() * 34
             }));
           }
         }
-        // spread the stars evenly: one per grid cell, jittered inside it
         const order = Array.from({ length: cells }, (_, i) => i);
         for (let i = cells - 1; i > 0; i--) {
           const j = Math.floor(sr() * (i + 1));
@@ -1566,10 +1445,6 @@
         }
       }
 
-      // Hard swap, no crossfade: the real text is hidden in exactly the frames in which the canvas copy
-      // is drawn (q > SHOW), so the two are never on screen together and can never read as a second copy.
-      // Don't swap on the first pixel of scroll: keep the real text until the dispersal is about to begin
-      // (particles start moving at q = S0 = 0.08), so tiny scrolls near the top never swap at all.
       const SHOW = 0.075;
       let domHidden = null;
       function applyDom(qq) {
@@ -1582,20 +1457,14 @@
         socials.style.pointerEvents = hide ? 'none' : '';
       }
 
-      // ---- Content-aware fade --------------------------------------------------------------------
-      // Stars near any piece of real content (text, tags, buttons, links, nav, name) dim out so they
-      // never sit behind it. Each star eases toward its target, so stars drift back in smoothly
-      // when the content scrolls away. Tweak these three numbers to taste.
-      const FADE_PAD = 1;       // px around content where stars are fully hidden
-      const FADE_FEATHER = 5;  // px over which stars fade back in (the soft edge)
-      const FADE_FLOOR = 0.0;   // 0 = fully hidden behind content, 0.2 = faint ghost stars remain
-      const FADE_SPEED = 5;     // higher = quicker fade in/out
+      const FADE_PAD = 1;
+      const FADE_FEATHER = 5;
+      const FADE_FLOOR = 0.0;
+      const FADE_SPEED = 5;
 
-      // Text is measured line by line (so stars fill the ragged edges and gaps beside it);
-      // buttons, tags, rows etc. use their whole box.
-      const TEXT_SEL = ['section p', '.t-date', '.t-item h3', 'footer.foot p'];
+      const TEXT_SEL = ['section p', '.t-date', '.t-item h3', 'footer.foot p', '.contact-list .k', '.contact-list .v'];
       const BOX_SEL = ['.t-more', '.t-details', '.tags li', '.resume-link', '.contact-mail',
-        '.contact-list li', '.nav-list a', '#brand'];
+        '.dock-pill', '#brand'];
       const mk = (sel, text) => [...document.querySelectorAll(sel.join(','))]
         .map(el => ({ el, text, rv: el.closest('.reveal') }));
       const zoneEls = mk(TEXT_SEL, true).concat(mk(BOX_SEL, false));
@@ -1617,7 +1486,6 @@
         zoneN = 0;
         for (let i = 0; i < zoneEls.length; i++) {
           const z = zoneEls[i];
-          // content that hasn't faded in yet shouldn't clear stars
           if (z.rv && !z.rv.classList.contains('in')) continue;
           if (z.text) {
             const box = z.el.getBoundingClientRect();
@@ -1655,7 +1523,6 @@
           const hy = p.hy - sy;
 
           if (e === 0) {
-            // still part of the text: drawn in one batch, same brightness as the real text
             if (hy < -2 || hy > vh + 2) continue;
             (p.ha > 0.7 ? rest1 : rest2).rect(p.hx - hs / 2, hy - hs / 2, hs, hs);
             continue;
@@ -1675,7 +1542,6 @@
             const aStar = (p.base + (1 - p.base) * tw * tw) * 0.9;
             a = (p.ha + (aStar - p.ha) * e) * vis;
             sz = hs + (p.size - hs) * e;
-            // fade around real content (scaled by e so the text-to-star dispersal is untouched)
             const ft = fadeAt(x, y);
             if (p.fv === undefined || reduceMotion) p.fv = ft;
             else p.fv += (ft - p.fv) * (1 - Math.exp(-dt * FADE_SPEED));
@@ -1716,11 +1582,9 @@
         q = reduceMotion ? target : q + (target - q) * (1 - Math.exp(-dt * 7));
         if (Math.abs(target - q) < 0.0005) q = target;
 
-        // While the real text is still showing, make sure the canvas copy matches where it really is
-        // (fonts, layout or the intro animation may have settled after the last build). Cheap no-op if so.
         if (q <= SHOW) build();
 
-        const drawCopy = parts.length > 0 && q > SHOW; // never hide the real text without its copy
+        const drawCopy = parts.length > 0 && q > SHOW;
         applyDom(drawCopy ? q : 0);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, vw, vh);
@@ -1745,7 +1609,6 @@
       window.addEventListener('load', rebuild);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(rebuild);
       setTimeout(rebuild, 2300);
-      // build the canvas copy as soon as the intro animation is done
       Promise.all(
         [...title.getAnimations({ subtree: true }), ...socials.getAnimations({ subtree: true })]
           .map(an => an.finished.catch(() => { }))
