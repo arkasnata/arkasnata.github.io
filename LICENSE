@@ -1,14 +1,22 @@
 Copyright (c) 2026 Arkasnata Dey. All rights reserved.
 
 This repository contains the source code, design, text and other content of
-the personal portfolio website of Arkasnata Dey.
+the personal portfolio website of Arkasnata Dey (https://arkasnata.github.io/).
 
 No permission is granted to copy, modify, publish, distribute, sublicense or
 use this work, in whole or in part, without prior written permission from the
-copyright holder.
+copyright holder. All rights not expressly granted are reserved to the fullest
+extent permitted by law.
 
-Viewing the website and forking this repository on GitHub solely as permitted
-by GitHub's Terms of Service is allowed. Third-party assets (such as fonts and
-JavaScript libraries) remain the property of their respective owners and are
-subject to their own licenses, which are listed in THIRD-PARTY-NOTICES.md and
-are not affected by the copyright notice above.
+Viewing the website, and forking this repository on GitHub solely as permitted
+by GitHub's Terms of Service, is allowed.
+
+To request permission, contact the copyright holder through the email address
+shown on https://arkasnata.github.io/ or through GitHub (@arkasnata). Please
+describe what you want to use and how. Permission is only valid if given in
+writing.
+
+Third-party assets (such as fonts, JavaScript libraries and icons) remain the
+property of their respective owners and are subject to their own licenses,
+which are listed in THIRD-PARTY-NOTICES.md. They are not affected by the
+copyright notice above.
