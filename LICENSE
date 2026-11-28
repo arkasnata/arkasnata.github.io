@@ -16,7 +16,7 @@ shown on https://arkasnata.github.io/ or through GitHub (@arkasnata). Please
 describe what you want to use and how. Permission is only valid if given in
 writing.
 
-Third-party assets (such as fonts, JavaScript libraries and icons) remain the
-property of their respective owners and are subject to their own licenses,
-which are listed in THIRD-PARTY-NOTICES.md. They are not affected by the
-copyright notice above.
+Third-party components (the Inter typeface and the Lenis JavaScript library)
+remain the property of their respective owners and are subject to their own
+licenses, which are listed in THIRD-PARTY-NOTICES.md. They are not affected by
+the copyright notice above.

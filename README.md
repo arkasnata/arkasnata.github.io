@@ -25,12 +25,9 @@ license above.
 | --- | --- | --- |
 | [Inter](https://github.com/rsms/inter) | Typeface, self-hosted in `fonts/` | [SIL Open Font License 1.1](fonts/Inter-OFL-LICENSE.txt) |
 | [Lenis](https://github.com/darkroomengineering/lenis) v1.1.20 | Smooth scrolling, self-hosted in `lib/` | [MIT](lib/Lenis-MIT-LICENSE.txt) |
-| [Octicons](https://github.com/primer/octicons) | GitHub icon (inline SVG) | MIT, see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) |
-| [Heroicons](https://github.com/tailwindlabs/heroicons) | Arrow icon (inline SVG) | MIT, see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) |
-| [Simple Icons](https://github.com/simple-icons/simple-icons) | LinkedIn icon (inline SVG) | CC0 1.0 |
 
 The Inter and Lenis copyright notices and license texts are included in the
-`fonts/` and `lib/` folders respectively, as their licenses require. The icon
-notices and the MIT license text are in
-[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). GitHub and LinkedIn names and
-logos are trademarks of their owners.
+`fonts/` and `lib/` folders respectively, as their licenses require. Further
+details are in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). The site uses
+no third-party icons or logos. GitHub and LinkedIn names are trademarks of
+their owners and appear only as text links to the owner's profiles.
