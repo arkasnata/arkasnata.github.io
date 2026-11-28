@@ -1,0 +1,29 @@
+Copyright (c) 2026 Arkasnata Dey. All rights reserved.
+SPDX-License-Identifier: LicenseRef-All-Rights-Reserved
+
+This repository contains the source code, design, text and other content of
+the personal portfolio website of Arkasnata Dey (https://arkasnata.github.io/).
+
+No permission is granted to copy, modify, publish, distribute, sublicense or
+use this work, in whole or in part, without prior written permission from the
+copyright holder. All rights not expressly granted are reserved to the fullest
+extent permitted by law.
+
+Viewing the website, and forking this repository on GitHub solely as permitted
+by GitHub's Terms of Service, is allowed.
+
+To request permission, contact the copyright holder through GitHub (@arkasnata,
+https://github.com/arkasnata) or through the email address shown on
+https://arkasnata.github.io/. Please describe what you want to use and how.
+Permission is only valid if given in writing.
+
+Third-party components (the Inter typeface and the Lenis JavaScript library)
+remain the property of their respective owners and are subject to their own
+licenses, which are listed in THIRD-PARTY-NOTICES.md. They are not affected by
+the copyright notice above.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE WORK OR ITS USE.
